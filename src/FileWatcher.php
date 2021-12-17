@@ -60,14 +60,14 @@ class FileWatcher
         return $this;
     }
 
-    public function hasChanges()
+    public function exists()
     {
         return $this->changed;
     }
 
     public function whenChanged(callable $callback)
     {
-        if ($this->hasChanges()) {
+        if ($this->exists()) {
             return $callback();
         }
     }

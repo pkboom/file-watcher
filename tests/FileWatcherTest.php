@@ -57,15 +57,15 @@ class FileWatcherTest extends TestCase
     }
 
     /** @test */
-    public function itCanfind()
+    public function itCanfindChanges()
     {
         $watcher = FileWatcher::create(__DIR__.'/fixtures/example.php');
 
-        $this->assertFalse($watcher->find()->hasChanges());
+        $this->assertFalse($watcher->find()->exists());
 
         file_put_contents(__DIR__.'/fixtures/example.php', 'changed');
 
-        $this->assertTrue($watcher->find()->hasChanges());
+        $this->assertTrue($watcher->find()->exists());
     }
 
     /** @test */
