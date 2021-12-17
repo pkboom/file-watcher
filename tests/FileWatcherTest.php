@@ -12,10 +12,10 @@ class FileWatcherTest extends TestCase
     /** @test */
     public function itCanAcceptFilePath()
     {
-        $watcher = FileWatcher::create(__DIR__.'/fixtures/example.php');
+        $watcher = FileWatcher::create(__DIR__.'/temp/example.php');
 
         $watcher->files->each(function ($timestamp, $file) {
-            $this->assertEquals(__DIR__.'/fixtures/example.php', $file);
+            $this->assertEquals(__DIR__.'/temp/example.php', $file);
         });
     }
 
@@ -23,13 +23,13 @@ class FileWatcherTest extends TestCase
     public function itCanAcceptAnArray()
     {
         $watcher = FileWatcher::create([
-            __DIR__.'/fixtures/example.php',
-            __DIR__.'/fixtures/example2.php',
+            __DIR__.'/temp/example.php',
+            __DIR__.'/temp/example2.php',
         ]);
 
         $watcher->files->keys()->sort()->values()->pipe(function ($files) {
-            $this->assertEquals(__DIR__.'/fixtures/example.php', $files[0]);
-            $this->assertEquals(__DIR__.'/fixtures/example2.php', $files[1]);
+            $this->assertEquals(__DIR__.'/temp/example.php', $files[0]);
+            $this->assertEquals(__DIR__.'/temp/example2.php', $files[1]);
         });
     }
 
@@ -37,14 +37,14 @@ class FileWatcherTest extends TestCase
     public function itCanAcceptFinder()
     {
         $finder = (new Finder())
-            ->in(__DIR__.'/fixtures')
+            ->in(__DIR__.'/temp')
             ->files();
 
         $watcher = FileWatcher::create($finder);
 
         $watcher->files->keys()->sort()->values()->pipe(function ($files) {
-            $this->assertEquals(__DIR__.'/fixtures/example.php', $files[0]);
-            $this->assertEquals(__DIR__.'/fixtures/example2.php', $files[1]);
+            $this->assertEquals(__DIR__.'/temp/example.php', $files[0]);
+            $this->assertEquals(__DIR__.'/temp/example2.php', $files[1]);
         });
     }
 
@@ -59,11 +59,11 @@ class FileWatcherTest extends TestCase
     /** @test */
     public function itCanfindChanges()
     {
-        $watcher = FileWatcher::create(__DIR__.'/fixtures/example.php');
+        $watcher = FileWatcher::create(__DIR__.'/temp/example.php');
 
         $this->assertFalse($watcher->find()->exists());
 
-        file_put_contents(__DIR__.'/fixtures/example.php', 'changed');
+        file_put_contents(__DIR__.'/temp/example.php', 'changed');
 
         $this->assertTrue($watcher->find()->exists());
     }
@@ -72,7 +72,7 @@ class FileWatcherTest extends TestCase
     public function itCanRunACallbackIfAnyChange()
     {
         $finder = (new Finder())
-            ->in(__DIR__.'/fixtures')
+            ->in(__DIR__.'/temp')
             ->files();
 
         $watcher = FileWatcher::create($finder);
@@ -85,7 +85,7 @@ class FileWatcherTest extends TestCase
 
         $this->assertEquals('foo', $proof);
 
-        file_put_contents(__DIR__.'/fixtures/example2.php', 'changed');
+        file_put_contents(__DIR__.'/temp/example2.php', 'changed');
 
         $watcher->find()->whenChanged(function () use (&$proof) {
             $proof = 'bar';
