@@ -65,7 +65,7 @@ class FileWatcher
         return $this->changed;
     }
 
-    public function runIfAny(callable $callback)
+    public function whenChanged(callable $callback)
     {
         if ($this->hasChanges()) {
             return $callback();

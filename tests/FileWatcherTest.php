@@ -79,7 +79,7 @@ class FileWatcherTest extends TestCase
 
         $proof = 'foo';
 
-        $watcher->findChanges()->runIfAny(function () use (&$proof) {
+        $watcher->findChanges()->whenChanged(function () use (&$proof) {
             $proof = 'bar';
         });
 
@@ -87,7 +87,7 @@ class FileWatcherTest extends TestCase
 
         file_put_contents(__DIR__.'/fixtures/example2.php', 'changed');
 
-        $watcher->findChanges()->runIfAny(function () use (&$proof) {
+        $watcher->findChanges()->whenChanged(function () use (&$proof) {
             $proof = 'bar';
         });
 
