@@ -43,7 +43,7 @@ class FileWatcher
         return new static($finder);
     }
 
-    public function findChanges()
+    public function find()
     {
         clearstatcache();
 

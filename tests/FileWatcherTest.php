@@ -57,15 +57,15 @@ class FileWatcherTest extends TestCase
     }
 
     /** @test */
-    public function itCanFindChanges()
+    public function itCanfind()
     {
         $watcher = FileWatcher::create(__DIR__.'/fixtures/example.php');
 
-        $this->assertFalse($watcher->findChanges()->hasChanges());
+        $this->assertFalse($watcher->find()->hasChanges());
 
         file_put_contents(__DIR__.'/fixtures/example.php', 'changed');
 
-        $this->assertTrue($watcher->findChanges()->hasChanges());
+        $this->assertTrue($watcher->find()->hasChanges());
     }
 
     /** @test */
@@ -79,7 +79,7 @@ class FileWatcherTest extends TestCase
 
         $proof = 'foo';
 
-        $watcher->findChanges()->whenChanged(function () use (&$proof) {
+        $watcher->find()->whenChanged(function () use (&$proof) {
             $proof = 'bar';
         });
 
@@ -87,7 +87,7 @@ class FileWatcherTest extends TestCase
 
         file_put_contents(__DIR__.'/fixtures/example2.php', 'changed');
 
-        $watcher->findChanges()->whenChanged(function () use (&$proof) {
+        $watcher->find()->whenChanged(function () use (&$proof) {
             $proof = 'bar';
         });
 

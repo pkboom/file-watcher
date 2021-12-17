@@ -13,7 +13,7 @@ $watcher = FileWatcher::create('/path/to/example.php');
 $watcher = FileWatcher::create((new Finder())->in('dir')->files());
 
 Loop::addPeriodicTimer(1, function () use ($watcher) {
-    $watcher->findChanges()->whenChanged(function () {
+    $watcher->find()->whenChanged(function () {
         //
     });
 });
