@@ -1,6 +1,6 @@
 <?php
 
-namespace Pkboom\FileWatcher\Test;
+namespace Tests;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
