@@ -2,6 +2,7 @@
 
 namespace Pkboom\FileWatcher\Test;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Pkboom\FileWatcher\FileWatcher;
 use Spatie\TestTime\TestTime;
@@ -20,6 +21,20 @@ class FileWatcherTest extends TestCase
     }
 
     /** @test */
+    public function itCanAcceptAnArray()
+    {
+        $watcher = FileWatcher::create([
+            __DIR__.'/fixtures/example.php',
+            __DIR__.'/fixtures/example2.php',
+        ]);
+
+        $watcher->files->keys()->sort()->values()->pipe(function ($files) {
+            $this->assertEquals(__DIR__.'/fixtures/example.php', $files[0]);
+            $this->assertEquals(__DIR__.'/fixtures/example2.php', $files[1]);
+        });
+    }
+
+    /** @test */
     public function itCanAcceptFinder()
     {
         $finder = (new Finder())
@@ -28,9 +43,18 @@ class FileWatcherTest extends TestCase
 
         $watcher = FileWatcher::create($finder);
 
-        $watcher->files->each(function ($timestamp, $file) {
-            $this->assertEquals(__DIR__.'/fixtures/example.php', $file);
+        $watcher->files->keys()->sort()->values()->pipe(function ($files) {
+            $this->assertEquals(__DIR__.'/fixtures/example.php', $files[0]);
+            $this->assertEquals(__DIR__.'/fixtures/example2.php', $files[1]);
         });
+    }
+
+    /** @test */
+    public function itCanThrowAnExceptionWithAnInvalidArgument()
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        FileWatcher::create(null);
     }
 
     /** @test */
@@ -44,7 +68,7 @@ class FileWatcherTest extends TestCase
 
         TestTime::addMinute();
 
-        file_put_contents(__DIR__.'/fixtures/example.php', 'haha');
+        file_put_contents(__DIR__.'/fixtures/example.php', 'foo');
 
         $this->assertTrue($watcher->findChanges()->hasChanges());
     }
@@ -62,7 +86,7 @@ class FileWatcherTest extends TestCase
 
         TestTime::addMinute();
 
-        file_put_contents(__DIR__.'/fixtures/example.php', 'haha');
+        file_put_contents(__DIR__.'/fixtures/example2.php', 'foo');
 
         $proof = 'foo';
 

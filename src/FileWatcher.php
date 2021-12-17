@@ -16,9 +16,13 @@ class FileWatcher
     public function __construct($finder)
     {
         if (is_string($finder)) {
-            $this->files = Collection::make([
-              $finder => filemtime($finder),
-            ]);
+            $finder = [$finder];
+        }
+
+        if (is_array($finder)) {
+            $this->files = Collection::make($finder)->flatMap(function ($file) {
+                return [$file => filemtime($file)];
+            });
         }
 
         if ($finder instanceof Finder) {
@@ -63,6 +67,8 @@ class FileWatcher
 
     public function runIfAny(callable $callback)
     {
-        return $callback();
+        if ($this->hasChanges()) {
+            return $callback();
+        }
     }
 }
