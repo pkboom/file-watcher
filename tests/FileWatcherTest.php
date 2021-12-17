@@ -63,7 +63,7 @@ class FileWatcherTest extends TestCase
 
         $this->assertFalse($watcher->findChanges()->hasChanges());
 
-        file_put_contents(__DIR__.'/fixtures/example.php', 'change');
+        file_put_contents(__DIR__.'/fixtures/example.php', 'changed');
 
         $this->assertTrue($watcher->findChanges()->hasChanges());
     }
@@ -85,7 +85,7 @@ class FileWatcherTest extends TestCase
 
         $this->assertEquals('foo', $proof);
 
-        file_put_contents(__DIR__.'/fixtures/example2.php', 'change');
+        file_put_contents(__DIR__.'/fixtures/example2.php', 'changed');
 
         $watcher->findChanges()->runIfAny(function () use (&$proof) {
             $proof = 'bar';
