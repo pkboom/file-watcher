@@ -22,5 +22,6 @@ return (new PhpCsFixer\Config())
         'semicolon_after_instruction' => false,
         'strict_comparison' => true,
         'yoda_style' => false,
+        'php_unit_method_casing' => ['case' => 'snake_case'],
     ])
     ->setFinder($finder);

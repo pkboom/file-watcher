@@ -4,57 +4,49 @@ namespace Pkboom\FileWatcher;
 
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
 class FileWatcher
 {
     public $files;
 
-    public $changed = false;
+    protected $changed = false;
 
-    public function __construct($finder)
+    public function __construct($files)
     {
-        if (is_string($finder)) {
-            $finder = [$finder];
-        }
-
-        if (is_array($finder)) {
-            $this->files = Collection::make($finder)->flatMap(function ($file) {
-                return [$file => filemtime($file)];
-            });
-        }
-
-        if ($finder instanceof Finder) {
-            $this->files = Collection::make($finder)->flatMap(function (SplFileInfo $file) {
-                return [
-                  $file->getRealPath() => filemtime($file->getRealPath()),
-                ];
-            });
-        }
-
-        if (!$this->files) {
-            throw new InvalidArgumentException('Valid arguments: file path or Finder object.');
-        }
+        $this->files = Collection::make($files)
+            ->map(fn ($file) => $this->getPath($file))
+            ->flatMap(fn ($file) => [$file => filemtime($file)]);
     }
 
-    public static function create($finder)
+    public function getPath($file)
     {
-        return new static($finder);
+        if ($file instanceof SplFileInfo) {
+            return $file->getRealPath();
+        }
+
+        if (is_file($file)) {
+            return $file;
+        }
+
+        throw new InvalidArgumentException("Invalid file path: $file.");
+    }
+
+    public static function create($files)
+    {
+        return new static($files);
     }
 
     public function find()
     {
         clearstatcache();
 
-        $this->files->each(function ($timestamp, $file) {
+        $this->files = $this->files->mapWithKeys(function ($timestamp, $file) {
             if ($timestamp !== filemtime($file)) {
-                $timestamp = filemtime($file);
-
                 $this->changed = true;
-
-                return false;
             }
+
+            return [$file => filemtime($file)];
         });
 
         return $this;
@@ -68,7 +60,9 @@ class FileWatcher
     public function whenChanged(callable $callback)
     {
         if ($this->exists()) {
-            return $callback();
+            $this->changed = false;
+
+            $callback();
         }
     }
 }
