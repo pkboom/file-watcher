@@ -22,4 +22,5 @@ return (new PhpCsFixer\Config())
         'semicolon_after_instruction' => false,
         'strict_comparison' => true,
         'yoda_style' => false,
-    ]);
+    ])
+    ->setFinder($finder);
