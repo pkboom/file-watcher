@@ -48,6 +48,8 @@ class FileWatcher
                 $timestamp = filemtime($file);
 
                 $this->changed = true;
+
+                return false;
             }
         });
 
