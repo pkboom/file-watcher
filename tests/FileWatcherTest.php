@@ -5,7 +5,6 @@ namespace Pkboom\FileWatcher\Test;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Pkboom\FileWatcher\FileWatcher;
-use Spatie\TestTime\TestTime;
 use Symfony\Component\Finder\Finder;
 
 class FileWatcherTest extends TestCase
@@ -60,15 +59,11 @@ class FileWatcherTest extends TestCase
     /** @test */
     public function itCanFindChanges()
     {
-        TestTime::freeze();
-
         $watcher = FileWatcher::create(__DIR__.'/fixtures/example.php');
 
         $this->assertFalse($watcher->findChanges()->hasChanges());
 
-        TestTime::addMinute();
-
-        file_put_contents(__DIR__.'/fixtures/example.php', 'foo');
+        file_put_contents(__DIR__.'/fixtures/example.php', 'change');
 
         $this->assertTrue($watcher->findChanges()->hasChanges());
     }
@@ -76,19 +71,21 @@ class FileWatcherTest extends TestCase
     /** @test */
     public function itCanRunACallbackIfAnyChange()
     {
-        TestTime::freeze();
-
         $finder = (new Finder())
             ->in(__DIR__.'/fixtures')
             ->files();
 
         $watcher = FileWatcher::create($finder);
 
-        TestTime::addMinute();
-
-        file_put_contents(__DIR__.'/fixtures/example2.php', 'foo');
-
         $proof = 'foo';
+
+        $watcher->findChanges()->runIfAny(function () use (&$proof) {
+            $proof = 'bar';
+        });
+
+        $this->assertEquals('foo', $proof);
+
+        file_put_contents(__DIR__.'/fixtures/example2.php', 'change');
 
         $watcher->findChanges()->runIfAny(function () use (&$proof) {
             $proof = 'bar';
