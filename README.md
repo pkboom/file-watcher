@@ -23,8 +23,6 @@ Loop::addPeriodicTimer(1, function () use ($watcher) {
 });
 ```
 
-Real documentation is in the works, but for now read the tests.
-
 ## Installation
 
 ```bash
