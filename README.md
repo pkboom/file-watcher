@@ -10,6 +10,10 @@ $watcher = FileWatcher::create('/path/to/example.php');
 
 // or
 
+$watcher = FileWatcher::create(['/path/to/example.php']);
+
+// or
+
 $watcher = FileWatcher::create((new Finder())->in('dir')->files());
 
 Loop::addPeriodicTimer(1, function () use ($watcher) {
