@@ -2,34 +2,21 @@
 
 namespace Pkboom\FileWatcher;
 
-use Illuminate\Support\Collection;
-use InvalidArgumentException;
-use Symfony\Component\Finder\SplFileInfo;
+use Symfony\Component\Finder\Finder;
 
 class FileWatcher
 {
-    public $files;
+    public $finder;
 
     protected $changed = false;
 
-    public function __construct($files)
+    public $updates;
+
+    public function __construct(Finder $finder)
     {
-        $this->files = Collection::make($files)
-            ->map(fn ($file) => $this->getPath($file))
-            ->flatMap(fn ($file) => [$file => filemtime($file)]);
-    }
+        $this->finder = $finder;
 
-    public function getPath($file)
-    {
-        if ($file instanceof SplFileInfo) {
-            return $file->getRealPath();
-        }
-
-        if (is_file($file)) {
-            return $file;
-        }
-
-        throw new InvalidArgumentException("Invalid file path: $file.");
+        $this->updates = $this->storeUpdateTime();
     }
 
     public static function create($files)
@@ -41,12 +28,13 @@ class FileWatcher
     {
         clearstatcache();
 
-        $this->files = $this->files->mapWithKeys(function ($timestamp, $file) {
-            if ($timestamp !== filemtime($file)) {
+        $this->finder = collect($this->finder)->each(function ($file) {
+            if (isset($this->updates[$file->getRealPath()]) &&
+                $this->updates[$file->getRealPath()] !== filemtime($file->getRealPath())) {
                 $this->changed = true;
             }
 
-            return [$file => filemtime($file)];
+            $this->updates[$file->getRealPath()] = filemtime($file->getRealPath());
         });
 
         return $this;
@@ -64,5 +52,12 @@ class FileWatcher
 
             $callback();
         }
+    }
+
+    public function storeUpdateTime()
+    {
+        return collect($this->finder)->mapWithKeys(function ($file) {
+            return [$file->getRealPath() => filemtime($file->getRealPath())];
+        });
     }
 }

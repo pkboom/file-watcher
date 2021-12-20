@@ -6,14 +6,6 @@ Filewatcher is a simple file watcher. You can run a callback based on file chang
 use Pkboom\FileWatcher\FileWatcher;
 use React\EventLoop\Loop;
 
-$watcher = FileWatcher::create('/path/to/example.php');
-
-// or
-
-$watcher = FileWatcher::create(['/path/to/example.php']);
-
-// or
-
 $watcher = FileWatcher::create((new Finder())->in('dir')->files());
 
 Loop::addPeriodicTimer(1, function () use ($watcher) {
