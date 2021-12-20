@@ -16,7 +16,7 @@ class FileWatcher
     {
         $this->finder = $finder;
 
-        $this->updates = $this->storeUpdateTime();
+        $this->storeUpdateTime();
     }
 
     public static function create($files)
@@ -28,14 +28,14 @@ class FileWatcher
     {
         clearstatcache();
 
-        $this->finder = collect($this->finder)->each(function ($file) {
+        foreach ($this->finder as $file) {
             if (isset($this->updates[$file->getRealPath()]) &&
                 $this->updates[$file->getRealPath()] !== filemtime($file->getRealPath())) {
                 $this->changed = true;
             }
 
             $this->updates[$file->getRealPath()] = filemtime($file->getRealPath());
-        });
+        }
 
         return $this;
     }
@@ -56,8 +56,8 @@ class FileWatcher
 
     public function storeUpdateTime()
     {
-        return collect($this->finder)->mapWithKeys(function ($file) {
-            return [$file->getRealPath() => filemtime($file->getRealPath())];
-        });
+        foreach ($this->finder as $file) {
+            $this->updates[$file->getRealPath()] = filemtime($file->getRealPath());
+        }
     }
 }

@@ -15,7 +15,6 @@
     ],
     "require": {
         "php": "^8.0",
-        "illuminate/collections": "^8.76",
         "symfony/finder": "^5.0"
     },
     "require-dev": {
