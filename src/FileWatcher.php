@@ -6,15 +6,19 @@ use Symfony\Component\Finder\Finder;
 
 class FileWatcher
 {
-    public $finder;
+    public Finder|array $finder;
 
     protected $changed = false;
 
     public $updates;
 
-    public function __construct(Finder $finder)
+    public function __construct($finder)
     {
-        $this->finder = $finder;
+        if (is_string($finder)) {
+            $this->finder = [new File($finder)];
+        } else {
+            $this->finder = $finder;
+        }
 
         $this->storeUpdateTime();
     }

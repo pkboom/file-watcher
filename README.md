@@ -7,6 +7,8 @@ use Pkboom\FileWatcher\FileWatcher;
 use React\EventLoop\Loop;
 
 $watcher = FileWatcher::create((new Finder())->in('dir')->files());
+// or
+$watcher = FileWatcher::create('/path/to/file');
 
 Loop::addPeriodicTimer(1, function () use ($watcher) {
     $watcher->find()->whenChanged(function () {

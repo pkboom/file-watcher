@@ -11,91 +11,117 @@ use Symfony\Component\Finder\Finder;
  */
 class FileWatcherTest extends TestCase
 {
-    public function setUp(): void
-    {
-        $finder = (new Finder())
-            ->in(__DIR__.'/temp')
-            ->files();
-
-        $this->watcher = FileWatcher::create($finder);
-    }
-
     /** @test */
     public function it_accepts_a_finder()
     {
+        $finder = (new Finder())->in($this->tempDir())->files();
+
+        $this->watcher = FileWatcher::create($finder);
+
         $this->assertInstanceOf(Finder::class, $this->watcher->finder);
     }
 
     /** @test */
-    public function it_can_find_changes()
+    public function it_accepts_a_path()
     {
-        $this->assertFalse($this->watcher->find()->exists());
+        $path = $this->tempDir('example');
 
-        $timestamp = $this->watcher->updates[__DIR__.'/temp/example.php'];
+        $this->watcher = FileWatcher::create($path);
 
-        usleep(700000);
+        $this->assertIsArray($this->watcher->finder);
+    }
 
-        file_put_contents(__DIR__.'/temp/example.php', 'changed');
+    /**
+     * @dataProvider provider
+     * @test
+     */
+    public function it_can_find_changes($finder)
+    {
+        $watch = $this->watcher($finder);
 
-        $this->assertTrue($this->watcher->find()->exists());
+        $this->assertFalse($watch->find()->exists());
 
-        $updatedAt = $this->watcher->updates[__DIR__.'/temp/example.php'];
+        $timestamp = $watch->updates[$this->tempDir('example')];
+
+        sleep(1);
+
+        file_put_contents($this->tempDir('example'), microtime());
+
+        $updatedAt = $watch->updates[$this->tempDir('example')];
+
+        $this->assertTrue($watch->find()->exists());
+
+        $updatedAt = $watch->updates[$this->tempDir('example')];
 
         $this->assertLaterThan($timestamp, $updatedAt);
     }
 
-    /** @test */
-    public function it_runs_a_callback_if_any_change()
+    /**
+     * @dataProvider provider
+     * @test
+     */
+    public function it_runs_a_callback_if_any_change($finder)
     {
+        $watcher = $this->watcher($finder);
+
         $proof = 'foo';
 
-        $this->watcher->find()->whenChanged(function () use (&$proof) {
+        $watcher->find()->whenChanged(function () use (&$proof) {
             $proof = 'bar';
         });
 
         $this->assertEquals('foo', $proof);
 
-        usleep(700000);
+        sleep(1);
 
-        file_put_contents(__DIR__.'/temp/example2.php', 'changed');
+        file_put_contents($this->tempDir('example'), microtime());
 
-        $this->watcher->find()->whenChanged(function () use (&$proof) {
+        $watcher->find()->whenChanged(function () use (&$proof) {
             $proof = 'bar';
         });
 
         $this->assertEquals('bar', $proof);
     }
 
-    /** @test */
-    public function it_set_changed_to_false_after_a_callback_runs()
+    /**
+     * @dataProvider provider
+     * @test
+     */
+    public function it_set_changed_to_false_after_a_callback_runs($finder)
     {
-        $this->assertFalse($this->watcher->exists());
+        $watcher = $this->watcher($finder);
 
-        usleep(700000);
+        $this->assertFalse($watcher->exists());
 
-        file_put_contents(__DIR__.'/temp/example.php', 'changed');
+        sleep(1);
 
-        $this->watcher->find();
+        file_put_contents($this->tempDir('example'), microtime());
 
-        $this->assertTrue($this->watcher->exists());
+        $watcher->find();
 
-        $this->watcher->whenChanged(function () {});
+        $this->assertTrue($watcher->exists());
 
-        $this->assertFalse($this->watcher->exists());
+        $watcher->whenChanged(function () {});
+
+        $this->assertFalse($watcher->exists());
     }
 
     /** @test */
     public function it_can_detect_a_new_file()
     {
-        $newFile = __DIR__.'/temp/new_file.php';
+        $finder = (new Finder())->in($this->tempDir())->files();
 
-        $this->assertFalse(isset($this->watcher->updates[$newFile]));
+        $watcher = $this->watcher($finder);
 
-        file_put_contents($newFile, 'new');
+        $newFile = $this->tempDir('new_file');
 
-        $this->watcher->find();
+        $this->assertFalse(isset($watcher->updates[$newFile]));
 
-        $this->assertTrue(isset($this->watcher->updates[$newFile]));
+        file_put_contents($newFile, microtime());
+
+        $watcher->find();
+
+        $this->assertTrue(isset($watcher->updates[$newFile]));
 
         if (file_exists($newFile)) {
             unlink($newFile);
@@ -105,5 +131,23 @@ class FileWatcherTest extends TestCase
     public function assertLaterThan($before, $after)
     {
         $this->assertTrue($before < $after);
+    }
+
+    public function watcher($finder)
+    {
+        return FileWatcher::create($finder);
+    }
+
+    public function provider()
+    {
+        return [
+            [(new Finder())->in(__DIR__.'/temp')->files()],
+            [__DIR__.'/temp/example'],
+        ];
+    }
+
+    public function tempDir($filename = null)
+    {
+        return __DIR__.'/temp'.($filename ? "/$filename" : null);
     }
 }
