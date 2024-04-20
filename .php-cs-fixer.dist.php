@@ -1,26 +1,37 @@
 <?php
 
-$finder = Symfony\Component\Finder\Finder::create()
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
+
+$finder = Finder::create()
     ->in([
+        __DIR__.'/config',
         __DIR__.'/src',
         __DIR__.'/tests',
     ])
     ->name('*.php')
-    ->notName('*.blade.php');
+    ->notName('*.blade.php')
+    ->ignoreDotFiles(true)
+    ->ignoreVCS(true);
 
-return (new PhpCsFixer\Config())
-    ->setUsingCache(false)
-    ->setRiskyAllowed(true)
+return (new Config())
     ->setRules([
-        '@Symfony' => true,
-        'array_syntax' => ['syntax' => 'short'],
-        'increment_style' => ['style' => 'post'],
-        'multiline_whitespace_before_semicolons' => ['strategy' => 'no_multi_line'],
-        'semicolon_after_instruction' => false,
-        'strict_comparison' => true,
-        'yoda_style' => false,
-        'phpdoc_separation' => false,
-        'no_superfluous_phpdoc_tags' => false,
-        'php_unit_method_casing' => ['case' => 'snake_case'],
+        '@PhpCsFixer' => true,
+        'not_operator_with_successor_space' => true,
+        'blank_line_before_statement' => [
+            'statements' => ['break', 'continue', 'declare', 'return', 'throw', 'try'],
+        ],
+        'multiline_whitespace_before_semicolons' => true,
+        'php_unit_test_class_requires_covers' => false,
+        'php_unit_internal_class' => false,
+        'global_namespace_import' => true,
+        'phpdoc_add_missing_param_annotation' => false,
+        'ordered_class_elements' => [
+            'order' => ['use_trait'],
+        ],
+        'yoda_style' => [
+            'identical' => null,
+            'equal' => null,
+        ],
     ])
     ->setFinder($finder);
