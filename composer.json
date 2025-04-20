@@ -15,11 +15,11 @@
     ],
     "require": {
         "php": "^8.2",
-        "symfony/finder": "^7.0"
+        "symfony/finder": "^7.2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0",
-        "symfony/var-dumper": "^7.0"
+        "symfony/var-dumper": "^7.2.0"
     },
     "autoload": {
         "psr-4": {
